@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+
+  <form onsubmit="loginToKabinet(event)">
+    <input type="text" placeholder="login" id="email">
+    <input type="text" placeholder="password" id="pass">
+    <button onclick="loginToKabinet(event)">войти</button>
+  </form>
+
+  <script>
+
+    async function postData(url = '', data = {}) {
+      const response = await fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    }
+
+   async function loginToKabinet(event){
+    event.preventDefault()
+      let LOGIN = window.document.querySelector('#email').value
+      let PASS = window.document.querySelector('#pass').value
+      let loginData = {
+        login: LOGIN,
+        password: PASS
+      }
+
+     postData('https://rohw.gjuss.zp.ua/api/rest/receipt/kabinet_ident', loginData)
+       .then((response) => {
+       if(!response.items[0].err) {
+         const timeAlive = (+response.items[0].tokenTimeAlive * 1000) - 10000
+         localStorage.setItem('weltumKey', response.items[0].secret_key)
+         localStorage.setItem('weltumTimeAuth', Date.now())
+         localStorage.setItem('weltumtokenTimeAlive', timeAlive)
+         localStorage.setItem('weltumAuth', loginData.login)
+         localStorage.setItem('weltum_user_fio', response.items[0].fio)
+         localStorage.setItem('weltum_user_tel', response.items[0].tel)
+         localStorage.setItem('weltum_user_mail', response.items[0].mail)
+       }
+         window.location.href = '/kabinet/'
+     })
+    }
+  </script>
+</body>
+</html>
